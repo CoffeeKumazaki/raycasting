@@ -55,7 +55,7 @@ int main(int argc, char const *argv[]) {
 	// Our state
 	bool show_demo_window = true;
 	bool show_another_window = false;
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	ImVec4 clear_color = ImVec4(89.0f/255.0, 88.0f/255.0, 87.0f/255.0, 1.00f);
 	ImVec4 seg_color = ImVec4(0.0f, 0.0f, 0.0f, 1.00f);
 	ImVec4 ray_color = ImVec4(1.0f, 1.0f, 1.0f, 1.00f);
 
