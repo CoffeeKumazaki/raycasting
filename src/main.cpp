@@ -5,10 +5,10 @@
 std::vector<Segment> segments =  {
 
 	// Border
-	{{   0,   0}, { 640,   0}},
-	{{ 640,   0}, { 640, 360}},
-	{{ 640, 360}, {   0, 360}},
-	{{   0, 360}, {   0,   0}},
+	{{   0,   0}, { 1280,   0}},
+	{{ 1280,   0}, { 1280, 720}},
+	{{ 1280, 720}, {   0, 720}},
+	{{   0, 720}, {   0,   0}},
 
 	// Polygon #1
 	{{100,150}, {120,50}},
@@ -81,7 +81,7 @@ int main(int argc, char const *argv[]) {
 			Ray ray;
 			ray.pos.x = mouse_pos.x;
 			ray.pos.y = mouse_pos.y;
-			ray.length = 400;
+			ray.length = 100.0;
 			ImGuiWindowFlags window_flags = 0;
 			window_flags |= ImGuiWindowFlags_NoMove;
 			window_flags |= ImGuiWindowFlags_NoResize;
@@ -98,6 +98,7 @@ int main(int argc, char const *argv[]) {
 				ray.dir = angle;
 				Vector2D closest_intersection;
 				double closest = __DBL_MAX__;
+				bool find = false;
 				for (size_t i = 0; i < segments.size(); i++) {
 					Vector2D intersection;
 					if (!getIntersection(ray, segments[i], intersection)) {
@@ -109,11 +110,13 @@ int main(int argc, char const *argv[]) {
 					double d = sqrt(dx*dx+dy*dy);
 					if (d < closest) {
 						closest = d;
+						find = true;
 						closest_intersection = intersection;
 					}
 				}
-				if (closest != __DBL_MAX__)
+				if (find) {
 					intersections.push_back(closest_intersection);
+				}
 			}
 
 			ImDrawList *draw_list = ImGui::GetWindowDrawList();
@@ -129,7 +132,7 @@ int main(int argc, char const *argv[]) {
 				ImVec2 start = mouse_pos;
 				ImVec2 end = {(float)intersections[i].x, (float)intersections[i].y};
 				draw_list->AddLine(start, end, ImColor(ray_color), 2.0);
-				ImGui::Text("(%f, %f)", end.x, end.y);
+				// ImGui::Text("(%f, %f)", end.x, end.y);
 			}
 
 			ImGui::End();

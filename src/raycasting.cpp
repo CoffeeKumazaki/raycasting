@@ -4,8 +4,8 @@
 bool getIntersection(const Ray &ray, const Segment &segment, Vector2D &intersection) {
 
   Vector2D ray_delta;
-  ray_delta.x = ray.pos.x + cos(ray.dir)*ray.length;
-  ray_delta.y = ray.pos.y + sin(ray.dir)*ray.length;
+  ray_delta.x = cos(ray.dir)*ray.length;
+  ray_delta.y = sin(ray.dir)*ray.length;
 
   Vector2D seg_delta;
   seg_delta.x = segment.end.x - segment.begin.x;
@@ -20,8 +20,8 @@ bool getIntersection(const Ray &ray, const Segment &segment, Vector2D &intersect
   if (T2 < 0 || T2 > 1)
     return false;
 
-  intersection.x = ray.pos.x + ray_delta.x * T1;
-  intersection.y = ray.pos.y + ray_delta.y * T1;
+  intersection.x = ray.pos.x + ray_delta.x * std::min(1.0, T1);
+  intersection.y = ray.pos.y + ray_delta.y * std::min(1.0, T1);
 
   return true;
 }
