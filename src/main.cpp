@@ -1,15 +1,63 @@
 #include <stdafx.hpp>
 #include "imgui_helper.hpp"
+#include "raycasting.hpp"
 
+std::vector<Segment> segments =  {
+
+	// Border
+	{{   0,   0}, { 640,   0}},
+	{{ 640,   0}, { 640, 360}},
+	{{ 640, 360}, {   0, 360}},
+	{{   0, 360}, {   0,   0}},
+
+	// Polygon #1
+	{{100,150}, {120,50}},
+	{{120,50}, {200,80}},
+	{{200,80}, {140,210}},
+	{{140,210}, {100,150}},
+
+	// Polygon #2
+	{{100,200}, {120,250}},
+	{{120,250}, {60,300}},
+	{{60,300}, {100,200}},
+
+	// Polygon #3
+	{{200,260}, {220,150}},
+	{{220,150}, {300,200}},
+	{{300,200}, {350,320}},
+	{{350,320}, {200,260}},
+
+	// Polygon #4
+	{{340,60}, {360,40}},
+	{{360,40}, {370,70}},
+	{{370,70}, {340,60}},
+
+	// Polygon #5
+	{{450,190}, {560,170}},
+	{{560,170}, {540,270}},
+	{{540,270}, {430,290}},
+	{{430,290}, {450,190}},
+
+	// Polygon #6
+	{{400,95}, {580,50}},
+	{{580,50}, {480,150}},
+	{{480,150}, {400,95}}
+
+};
 
 int main(int argc, char const *argv[]) {
 
-	initImgui();
+	int w = 1280;
+	int h = 720;
+	std::string title = "Astar demo";
+	initImgui(w, h, title);
 
 	// Our state
 	bool show_demo_window = true;
 	bool show_another_window = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	ImVec4 seg_color = ImVec4(1.0f, 1.0f, 1.0f, 1.00f);
+	ImVec4 ray_color = ImVec4(1.0f, 0.0f, 0.0f, 1.00f);
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))
@@ -26,40 +74,64 @@ int main(int argc, char const *argv[]) {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-		if (show_demo_window)
-			ImGui::ShowDemoWindow(&show_demo_window);
-
 		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
 		{
-			static float f = 0.0f;
-			static int counter = 0;
+			ImGuiIO io = ImGui::GetIO();
+			ImVec2 mouse_pos = io.MousePos;
+			Ray ray;
+			ray.pos.x = mouse_pos.x;
+			ray.pos.y = mouse_pos.y;
+			ray.length = 400;
+			ImGuiWindowFlags window_flags = 0;
+			window_flags |= ImGuiWindowFlags_NoMove;
+			window_flags |= ImGuiWindowFlags_NoResize;
+			window_flags |= ImGuiWindowFlags_NoCollapse;
+			window_flags |= ImGuiWindowFlags_NoBackground;
+			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+			ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+			ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_FirstUseEver);
 
-			ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+			ImGui::Begin("Ray Casting", nullptr, window_flags);
+			std::vector<Vector2D> intersections;
 
-			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-			ImGui::Checkbox("Another Window", &show_another_window);
+			for (double angle = 0; angle < M_PI * 2; angle += (M_PI * 2)/ 50) {
+				ray.dir = angle;
+				Vector2D closest_intersection;
+				double closest = __DBL_MAX__;
+				for (size_t i = 0; i < segments.size(); i++) {
+					Vector2D intersection;
+					if (!getIntersection(ray, segments[i], intersection)) {
+						continue;
+					}
 
-			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+					double dx = intersection.x - ray.pos.x;
+					double dy = intersection.y - ray.pos.y;
+					double d = sqrt(dx*dx+dy*dy);
+					if (d < closest) {
+						closest = d;
+						closest_intersection = intersection;
+					}
+				}
+				if (closest != __DBL_MAX__)
+					intersections.push_back(closest_intersection);
+			}
 
-			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-				counter++;
-			ImGui::SameLine();
-			ImGui::Text("counter = %d", counter);
+			ImDrawList *draw_list = ImGui::GetWindowDrawList();
+			for (size_t i = 0; i < segments.size(); i++) {
+				ImVec2 start = {(float)segments[i].begin.x, (float)segments[i].begin.y};
+				ImVec2 end = {(float)segments[i].end.x, (float)segments[i].end.y};
+				draw_list->AddLine(start, end, ImColor(seg_color), 2.0);
+			}
 
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			ImGui::End();
-		}
+			ImGui::Text("Intersection num: %lu", intersections.size());
+			for (size_t i = 0; i < intersections.size(); i++)
+			{
+				ImVec2 start = mouse_pos;
+				ImVec2 end = {(float)intersections[i].x, (float)intersections[i].y};
+				draw_list->AddLine(start, end, ImColor(ray_color), 2.0);
+				ImGui::Text("(%f, %f)", end.x, end.y);
+			}
 
-		// 3. Show another simple window.
-		if (show_another_window)
-		{
-			ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-			ImGui::Text("Hello from another window!");
-			if (ImGui::Button("Close Me"))
-				show_another_window = false;
 			ImGui::End();
 		}
 
