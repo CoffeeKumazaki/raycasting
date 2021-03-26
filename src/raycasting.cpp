@@ -32,3 +32,47 @@ bool getIntersection(const Ray &ray, const Segment &segment, Vector2D &intersect
 
   return true;
 }
+
+bool getIntersection(const Ray &ray, const Circle &circle, Vector2D &intersection) {
+
+  Vector2D end;
+  end.x = ray.pos.x + cos(ray.dir) * ray.length;
+  end.y = ray.pos.y + sin(ray.dir) * ray.length;
+  double a = end.y - ray.pos.y;
+  double b = ray.pos.x - end.x;
+  double c = -(a * ray.pos.x + b * ray.pos.y);
+
+  double ex = (end.x - ray.pos.x) / ray.length;
+  double ey = (end.y - ray.pos.y) / ray.length;
+
+  double vx = -ey;
+  double vy = ex;
+
+  double k = -(a * circle.center.x + b * circle.center.y + c) / (a * vx + b * vy);
+  if (circle.radius < abs(k)) {
+    return false;
+  }
+
+  Vector2D p;
+  p.x = circle.center.x + k * vx;
+  p.y = circle.center.y + k * vy;
+
+  double s = sqrt(circle.radius * circle.radius - k * k);
+
+  double dx = circle.center.x - ray.pos.x;
+  double dy = circle.center.y - ray.pos.y;
+  double d = dx * dx + dy * dy;
+  if (d < circle.radius*circle.radius ) {
+    intersection.x = p.x + s * ex;
+    intersection.y = p.y + s * ey;
+  }
+  else {
+    intersection.x = p.x - s * ex;
+    intersection.y = p.y - s * ey;
+  }
+
+  return ((ray.pos.x <= intersection.x && intersection.x <= end.x) && (ray.pos.y <= intersection.y && intersection.y <= end.y))
+      || ((end.x <= intersection.x && intersection.x <= ray.pos.x) && (ray.pos.y <= intersection.y && intersection.y <= end.y))
+      || ((ray.pos.x <= intersection.x && intersection.x <= end.x) && (end.y <= intersection.y && intersection.y <= ray.pos.y))
+      || ((end.x <= intersection.x && intersection.x <= ray.pos.x) && (end.y <= intersection.y && intersection.y <= ray.pos.y));
+}

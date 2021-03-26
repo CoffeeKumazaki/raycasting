@@ -45,6 +45,10 @@ std::vector<Segment> segments =  {
 
 };
 
+std::vector<Circle> circles = {
+	{{600, 200}, 100},
+};
+
 int main(int argc, char const *argv[]) {
 
 	int w = 1280;
@@ -118,6 +122,23 @@ int main(int argc, char const *argv[]) {
 						closest_intersection = intersection;
 					}
 				}
+
+				for (size_t i = 0; i < circles.size(); i++) {
+					Vector2D intersection;
+					if (!getIntersection(ray, circles[i], intersection)) {
+						continue;
+					}
+
+					double dx = intersection.x - ray.pos.x;
+					double dy = intersection.y - ray.pos.y;
+					double d = sqrt(dx*dx+dy*dy);
+					if (d < closest) {
+						closest = d;
+						find = true;
+						closest_intersection = intersection;
+					}
+				}
+
 				if (find) {
 					intersections.push_back(closest_intersection);
 				}
@@ -130,6 +151,13 @@ int main(int argc, char const *argv[]) {
 					ImVec2 end = {(float)segments[i].end.x, (float)segments[i].end.y};
 					draw_list->AddLine(start, end, ImColor(seg_color), 2.0);
 				}
+
+				for (size_t i = 0; i < circles.size(); i++)
+				{
+					ImVec2 center = {(float)circles[i].center.x, (float)circles[i].center.y};
+					draw_list->AddCircle(center, circles[i].radius, ImColor(seg_color), 0, 2.0);
+				}
+				
 			}
 
 			for (size_t i = 0; i < intersections.size(); i++) {

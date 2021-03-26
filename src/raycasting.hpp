@@ -15,4 +15,10 @@ struct Segment {
   Vector2D end;
 };
 
+struct Circle {
+  Vector2D center;
+  double radius;
+};
+
 bool getIntersection(const Ray &ray, const Segment &segment, Vector2D &intersection);
+bool getIntersection(const Ray &ray, const Circle &circle, Vector2D &intersection);
