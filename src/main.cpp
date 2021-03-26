@@ -177,7 +177,7 @@ int main(int argc, char const *argv[]) {
 			ImGui::SliderInt("Num of rays", &num_ray, 1, 360);
 			ImGui::SliderInt("Len of rays", &len_ray, 100, 2000);
 			ImGui::PopItemWidth();
-			ImGui::Checkbox("Show Obstacless", &show_obstacle);
+			ImGui::Checkbox("Show Obstacles", &show_obstacle);
 
 			ImGui::End();
 		}
