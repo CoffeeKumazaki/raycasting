@@ -53,7 +53,7 @@ int main(int argc, char const *argv[]) {
 
 	int w = 1280;
 	int h = 720;
-	std::string title = "Ratcasting demo";
+	std::string title = "Raycasting demo";
 	initImgui(w, h, title);
 
 	// Our state
